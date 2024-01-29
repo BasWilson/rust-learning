@@ -392,3 +392,101 @@ fn other_slices() {
     let a = [1, 2, 3, 4, 5];
     let slice = &a[1..3];
 }
+
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}
+
+fn build_user(email: String, username: String) -> User {
+    User {
+        active: true,
+        username,
+        email,
+        sign_in_count: 1,
+    }
+}
+
+fn seed_users() {
+    let user1 = build_user(String::from("bas1@gmail.com"), String::from("bas1"));
+
+    let user2 = User {
+        email: String::from("baswilson@gmail.com"),
+        ..user1
+    };
+
+    // user1's fields that exist on the heap except for email have now moved to user2
+    // we cannot access user1's username anymore
+    println!("{}", user1.username)
+}
+
+// tuple structs
+struct Color(i32, i32, i32);
+
+fn tuple_stucts() {
+    let black = Color(1, 1, 1);
+}
+
+// unit like structs
+struct AlwaysEqual;
+
+fn unit_like_structs() {
+    let subject = AlwaysEqual;
+    // honestly dont know the point of this. will probably become clear at some point
+}
+
+#[derive(Debug)]
+struct Rect {
+    width: u32,
+    height: u32,
+}
+
+// the implementation block of a struct can contain functions (methods)
+// functions of a struct always have &self as first param. it borrows itself.
+// the first param can be &self for shorter syntax. or self: &Self liek below
+// can also take ownership if we want by just using &mut self: Self.
+// here we only want to read, so we just borrow
+// https://doc.rust-lang.org/book/ch05-03-method-syntax.html#method-syntax
+impl Rect {
+    fn area(self: &Self, multiplier: u32) -> u32 {
+        self.width * self.height * multiplier
+    }
+    fn can_hold(&self, other: &Rect) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+    fn square(size: u32) -> Self {
+        Self {
+            width: size,
+            height: size,
+        }
+    }
+}
+
+fn area(rect: Rect) -> u32 {
+    rect.width * rect.height
+}
+
+fn calc() {
+    let rect = Rect {
+        width: 20,
+        height: 20,
+    };
+
+    println!("rect 1 is {:?}", rect);
+    // will output rect 1 is { width: 20, height: 20 }
+    println!("rect 1 is {:#?}", rect);
+    // will output rect 1 is {
+    //    width: 20,
+    //    height: 20
+    // }
+    // best to only use whend ebugging. remove when compiling for prod
+    dbg!(&rect);
+
+    println!("Area of rect is {}", rect.area(1));
+
+    // we call this differently. it is kind of like a constructor function
+    // rust automatically namespaced square under rect. you cannot call it like: Rect.square()
+    let square = Rect::square(10);
+}
